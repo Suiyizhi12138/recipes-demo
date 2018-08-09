@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>食谱应用</title>
+    <script src="vue.min.js"></script>
+    <script src="jquery-3.1.1.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <style type="text/css">
+    .container{
+        margin-top:15px;
+       
+    }
+    </style>
+</head>
+<body>
+     <div id="container">
+         <div class="container">
+            <!--菜谱栏-->
+            <div class="recipe-box">
+                <ul class="nav nav-stacked" >
+                    <li v-for="(item , index) in recipes"><a class="drondown-toggle" data-toggle="dropdown"  href="javascript:" >{{item.name}}</a>
+                    <div class="panel panel-success dropdown-menu">
+                        <div class="panel-heading text-center">食材</div>
+                        <div class="panel-body">{{item.ingredients}}</div>
+                        <button class="btn btn-danger btn-delete" @click="deleteRecipe(index)" >删除</button> <button class="btn btn-edit" @click="showEditModal(index)">编辑</button>
+                    </div>
+                    </li>
+                </ul>
+         </div>
+         <!--添加模块-->
+         <div class="modal fade" id="addModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span>
+                            <span class="sr-only">close</span>
+                        </button>
+                        <h4 class="modal-title">添加菜品</h4>
+                    </div><!--modal-header-->
+                    <div class="modal-body">
+                        <h4>名称</h4>
+                        <input type="text" placeholder="请输入菜名" class="form-control" id="addInput">
+                        <h4>食材</h4>
+                        <textarea name="" id="addTextarea" cols="30" rows="10" placeholder="请输入食材" class="form-control"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" id="addRecipe" @click="saveAddRecipe">保存</button>
+                        <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                    </div><!--modal-footer-->
+                </div><!--modal-content-->
+            </div><!--modal-dialog-->
+        </div><!--modal-->
+        <!--编辑模块-->
+        <div class="modal fade" id="editModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span>
+                            <span class="sr-only">close</span>
+                        </button>
+                        <h4 class="modal-title">编辑菜品</h4>
+                    </div><!--modal-header-->
+                    <div class="modal-body">
+                        <h4>名称</h4>
+                        <input type="text" class="form-control" v-model="editRecipeName" >
+                        <h4>食材</h4>
+                        <textarea name="" id=""  class="form-control" v-model="editIngredients"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" id="addRecipe" @click="saveEditRecipe">保存</button>
+                        <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                    </div><!--modal-footer-->
+                </div><!--modal-content-->
+            </div><!--modal-dialog-->
+        </div><!--modal-->
+        <button class="btn btn-primary" id="btn-addModal" @click="showAddModal" >添加菜品</button>
+        </div>
+     </div>
+     <script>
+         
+         var vue = new Vue({
+             el: "#container",
+             data:{
+                 recipes: [],
+                 editRecipeName: '',
+                 editIngredients: '',
+                 curIndex: 0,
+             },
+             methods:{
+                //显示添加模态框
+                showAddModal: function(){
+                  $("#addModal").modal("toggle");
+                },
+
+                //保存添加
+                saveAddRecipe: function(){
+                    console.log("add");
+                    var nameValue = $("#addInput").val(),
+                    ingredientsValue = $("#addTextarea").val();
+                    //添加
+                    this.recipes.unshift({
+                        name: nameValue,
+                        ingredients: ingredientsValue
+                    });
+                    this.saveToLocal(this.recipes);
+                    
+                    //隐藏模态框
+                    $("#addModal").modal("toggle");
+                },
+                //删除菜品
+                deleteRecipe(index){
+                    console.log(index);
+                    this.recipes.splice(index,1);
+                    this.saveToLocal(this.recipes);
+                },
+                //显示编辑模态框
+                showEditModal: function(index){
+                    $("#editModal").modal("toggle");
+                    //传递当前列表值给模态框
+                    this.editRecipeName = this.recipes[index].name;
+                    this.editIngredients = this.recipes[index].ingredients;
+                    this.curIndex = index;
+                },
+                //保存编辑
+                saveEditRecipe: function(){
+                    $("#editModal").modal("toggle");
+                    this.recipes[this.curIndex].name = this.editRecipeName;
+                    this.recipes[this.curIndex].ingredients = this.editIngredients;
+                    this.saveToLocal(this.recipes);
+                },
+                saveToLocal: function(array){
+                    localStorage.setItem("__recipes",JSON.stringify(array));
+                },
+                
+                init(){
+                    if(localStorage["__recipes"]){
+                        this.recipes = JSON.parse(localStorage.getItem("__recipes"));
+                    }else{
+                        this.saveToLocal([{"name":"西红柿炒鸡蛋","ingredients":"西红柿、鸡蛋"}]);
+                    }
+                    
+                },
+
+             },
+             
+         });
+         vue.init();
+         
+        
+    </script>         
+    
+</body>
+</html>
